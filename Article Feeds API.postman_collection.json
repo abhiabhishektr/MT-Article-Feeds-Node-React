@@ -1,0 +1,389 @@
+{
+	"info": {
+		"_postman_id": "7f5477df-4012-4971-a95b-75de1fac4445",
+		"name": "Article Feeds API",
+		"description": "API documentation for the Article Feeds Web Application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31049459"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+			  {
+				"name": "Signup",
+				"request": {
+				  "method": "POST",
+				  "header": [
+					{
+					  "key": "Content-Type",
+					  "value": "application/json"
+					}
+				  ],
+				  "body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phone\": \"1234567890\",\n    \"email\": \"john.doe@example.com\",\n    \"dob\": \"1990-01-01\",\n    \"password\": \"yourpassword\",\n    \"preferences\": [\"tech\", \"sports\"]\n}"
+				  },
+				  "url": {
+					"raw": "{{base_url}}/auth/signup",
+					"host": ["{{base_url}}"],
+					"path": ["auth", "signup"]
+				  }
+				}
+			  },
+			  {
+				"name": "Login (via email)",
+				"request": {
+				  "method": "POST",
+				  "header": [
+					{
+					  "key": "Content-Type",
+					  "value": "application/json"
+					}
+				  ],
+				  "body": {
+					"mode": "raw",
+					"raw": "{\n    \"identifier\": \"john.doe@example.com\",\n    \"password\": \"yourpassword\"\n}"
+				  },
+				  "url": {
+					"raw": "{{base_url}}/auth/login",
+					"host": ["{{base_url}}"],
+					"path": ["auth", "login"]
+				  }
+				}
+			  },
+			  {
+				"name": "Login (via phone)",
+				"request": {
+				  "method": "POST",
+				  "header": [
+					{
+					  "key": "Content-Type",
+					  "value": "application/json"
+					}
+				  ],
+				  "body": {
+					"mode": "raw",
+					"raw": "{\n    \"identifier\": \"1234567890\",\n    \"password\": \"yourpassword\"\n}"
+				  },
+				  "url": {
+					"raw": "{{base_url}}/auth/login",
+					"host": ["{{base_url}}"],
+					"path": ["auth", "login"]
+				  }
+				}
+			  }
+			]
+		  }
+,		  
+{
+	"name": "Articles",
+	"item": [
+		{
+			"name": "Create Article",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "title",
+							"value": "Article Title",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "This is the description of the article.",
+							"type": "text"
+						},
+						{
+							"key": "category",
+							"value": "Technology",
+							"type": "text"
+						},
+						{
+							"key": "content",
+							"value": "This is the content of the article.",
+							"type": "text"
+						},
+						{
+							"key": "tags",
+							"value": "Tech, Innovation, News",
+							"type": "text"
+						},
+						{
+							"key": "images",
+							"type": "file",
+							"src": "/path/to/your/image.jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/articles",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"articles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Articles",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/articles/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"articles",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User's Articles",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/articles/user",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"articles",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Article",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Updated Article Title\",\n    \"description\": \"Updated description of the article.\",\n    \"category\": \"Updated Category\",\n    \"content\": \"Updated content of the article.\",\n    \"tags\": \"Updated, Tags\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/articles/{{id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"articles",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Article",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/articles/{{id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"articles",
+						"{{id}}"
+					],
+					"variable": [
+						{
+							"key": "id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Interact with Article",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"action\": \"like\" // or \"dislike\" or \"block\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/articles/{{id}}/interact",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"articles",
+						"{{id}}",
+						"interact"
+					],
+					"variable": [
+						{
+							"key": "id"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
+
+
+
+		,
+		{
+			"name": "User",
+			"item": [
+			  {
+				"name": "Update Preferences",
+				"request": {
+				  "method": "PUT",
+				  "header": [
+					{
+					  "key": "Authorization",
+					  "value": "Bearer {{jwt_token}}"
+					},
+					{
+					  "key": "Content-Type",
+					  "value": "application/json"
+					}
+				  ],
+				  "body": {
+					"mode": "raw",
+					"raw": "{\n    \"preferences\": [\"sports\", \"news\"],\n    \"action\": \"add\"\n}"
+				  },
+				  "url": {
+					"raw": "{{base_url}}/users/preferences",
+					"host": [
+					  "{{base_url}}"
+					],
+					"path": [
+					  "users",
+					  "preferences"
+					]
+				  }
+				},
+				"response": []
+			  },
+			  {
+				"name": "Get User Profile",
+				"request": {
+				  "method": "GET",
+				  "header": [
+					{
+					  "key": "Authorization",
+					  "value": "Bearer {{jwt_token}}"
+					}
+				  ],
+				  "url": {
+					"raw": "{{base_url}}/users/profile",
+					"host": [
+					  "{{base_url}}"
+					],
+					"path": [
+					  "users",
+					  "profile"
+					]
+				  }
+				},
+				"response": []
+			  },
+			  {
+				"name": "Update Password",
+				"request": {
+				  "method": "PUT",
+				  "header": [
+					{
+					  "key": "Authorization",
+					  "value": "Bearer {{jwt_token}}"
+					},
+					{
+					  "key": "Content-Type",
+					  "value": "application/json"
+					}
+				  ],
+				  "body": {
+					"mode": "raw",
+					"raw": "{\n    \"oldPassword\": \"currentPassword123\",\n    \"newPassword\": \"newPassword456\"\n}"
+				  },
+				  "url": {
+					"raw": "{{base_url}}/users/password",
+					"host": [
+					  "{{base_url}}"
+					],
+					"path": [
+					  "users",
+					  "password"
+					]
+				  }
+				},
+				"response": []
+			  }
+			]
+		  }
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		}
+	]
+}

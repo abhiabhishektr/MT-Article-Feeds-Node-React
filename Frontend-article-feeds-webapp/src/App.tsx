@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/toaster"
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
 import { AuthProvider } from './context/AuthContext';
+import   LandingPage  from './components/LandingPage';
 
 const App: React.FC = () => {
   return (
@@ -22,6 +23,7 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegistrationPage />} />
             <Route path="/login" element={<LoginPage />} />
           </Route>
+            <Route path="/" element={<LandingPage />} />
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/article-detail" element={<ArticleDetail />} />

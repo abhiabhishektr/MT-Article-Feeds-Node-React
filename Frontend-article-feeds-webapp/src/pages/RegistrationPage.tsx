@@ -1,7 +1,5 @@
-// import React, { useState } from 'react';
-import { } from 'react-router-dom';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { CalendarIcon, CheckIcon } from 'lucide-react';
 import DatePicker from "react-datepicker";
@@ -36,28 +34,19 @@ const preferenceOptions = [
   { id: 'news', label: 'News', icon: '📰' },
 ];
 
+// Update form schema to include confirmPassword and validate it
 const formSchema = z.object({
-  firstName: z.string().min(2, {
-    message: 'First name must be at least 2 characters.',
-  }),
-  lastName: z.string().min(2, {
-    message: 'Last name must be at least 2 characters.',
-  }),
-  phone: z.string().min(10, {
-    message: 'Phone number must be at least 10 characters.',
-  }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  dob: z.date({
-    required_error: 'Please select a date of birth.',
-  }),
-  password: z.string().min(8, {
-    message: 'Password must be at least 8 characters.',
-  }),
-  preferences: z.array(z.string()).min(1, {
-    message: 'Please select at least one preference.',
-  }),
+  firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
+  lastName: z.string().min(2, { message: 'Last name must be at least 2 characters.' }),
+  phone: z.string().min(10, { message: 'Phone number must be at least 10 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  dob: z.date({ required_error: 'Please select a date of birth.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  confirmPassword: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  preferences: z.array(z.string()).min(1, { message: 'Please select at least one preference.' }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match.",
+  path: ["confirmPassword"],
 });
 
 export default function RegistrationPage() {
@@ -71,29 +60,35 @@ export default function RegistrationPage() {
       phone: '',
       email: '',
       password: '',
+      confirmPassword: '',
       preferences: [],
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { data } = await signup(values); // Token is of type string
-      login(data.token); // Here, `response` should be the token
-      // console.log("values: ", values);
+      const { confirmPassword, ...dataToSend } = values;
+      const { data } = await signup(dataToSend);
+  
+      login(data.token);                                                                                                                        
       toast({
-        title: "Login Successful",
+        title: "Registration Successful",
         description: "Enjoy your personalized news feed!",
       });
-      navigate('/dashboard');
-    } catch (error) {
+      navigate('/dashboard'); 
+    } catch (error:any) {
+      const errorMessage =
+        error.response?.data?.message || 'There was an error during registration. Please try again.';
+  
       toast({
         title: 'Registration Failed',
-        description: 'There was an error during registration. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       console.error('Error during registration:', error);
     }
   }
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -203,12 +198,28 @@ export default function RegistrationPage() {
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="space-y-6 sm:space-y-0 sm:grid sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>

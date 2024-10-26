@@ -1,10 +1,9 @@
-// Backend-article-feeds-webapp/src/models/article.ts
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IArticle extends Document {
     title: string;       
     description: string; 
-    category: string;    
+    category: 'sports' | 'politics' | 'space' | 'tech' | 'news'; 
     content: string;     
     author: string;      
     likes: string[];     
@@ -17,7 +16,11 @@ export interface IArticle extends Document {
 const ArticleSchema: Schema = new Schema({
     title: { type: String, required: true },       
     description: { type: String, required: true }, 
-    category: { type: String, required: true },    
+    category: { 
+        type: String, 
+        enum: ['sports', 'politics', 'space', 'tech', 'news'],
+        required: true 
+    },
     content: { type: String, required: true },     
     author: { type: Schema.Types.ObjectId, ref: 'User', required: true }, 
     likes: [{ type: Schema.Types.ObjectId, ref: 'User', default: [] }],

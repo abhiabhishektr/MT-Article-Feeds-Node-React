@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 import {
   Form,
   FormControl,
@@ -14,15 +15,18 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { ICreateArticle, createArticle } from '@/api/articleApi';
+
 
 const categoryOptions = [
-  { id: 'React', label: 'React' },
-  { id: 'JavaScript', label: 'JavaScript' },
-  { id: 'CSS', label: 'CSS' },
-  { id: 'HTML', label: 'HTML' },
-  { id: 'Node.js', label: 'Node.js' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'politics', label: 'Politics' },
+  { id: 'space', label: 'Space' },
+  { id: 'tech', label: 'Technology' },
+  { id: 'news', label: 'News' },
 ];
+export const allowedTypes = /jpeg|jpg|png|gif/;
+
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -60,18 +64,42 @@ const ArticleCreationPage: React.FC = () => {
     },
   });
 
-  const handleImageChange = (index: number, value: string) => {
-    const currentImages = form.getValues('images') || [''];
-    const newImages = [...currentImages];
-    newImages[index] = value;
-    form.setValue('images', newImages);
-  };
 
   async function onSubmit(values: FormValues) {
+    // Convert images from data URL to File
+    const imagesAsFiles = await Promise.all(
+      values.images.map(async (image) => {
+        if (image) {
+          const response = await fetch(image);
+          const blob = await response.blob(); // Convert data URL to Blob
+
+          // Create a File instance from the Blob
+          const file = new File([blob], 'image.png', { type: blob.type }); // Adjust the filename as needed
+          return file;
+        }
+        return null;
+      })
+    );
+
+    // Prepare the article data
+    const articleData: ICreateArticle = {
+      title: values.title,
+      description: values.description,
+      content: values.content,
+      category: values.category,
+      tags: values.tags,
+      images: imagesAsFiles.filter((image): image is File => image !== null),
+      // Filter out null values
+    };
+  
     try {
-      await axios.post('/api/articles', values);
-      alert('Article Created');
-      navigate('/');
+      await createArticle(articleData);
+      toast({
+        description: "Article Created",
+        variant: "destructive",
+        className: "bg-black text-white",
+      })
+      navigate('/dashboard');
     } catch (error) {
       alert('Error creating article');
       console.error('Error creating article:', error);
@@ -90,7 +118,7 @@ const ArticleCreationPage: React.FC = () => {
             Fill in the details to create your article.
           </p>
         </div>
-  
+
         {/* Main Form Section */}
         <div className="p-6">
           <Form {...form}>
@@ -105,9 +133,9 @@ const ArticleCreationPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-lg font-semibold">Article Title</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Enter article title" 
-                            {...field} 
+                          <Input
+                            placeholder="Enter article title"
+                            {...field}
                             className="h-12"
                           />
                         </FormControl>
@@ -115,7 +143,7 @@ const ArticleCreationPage: React.FC = () => {
                       </FormItem>
                     )}
                   />
-  
+
                   <FormField
                     control={form.control}
                     name="description"
@@ -123,9 +151,9 @@ const ArticleCreationPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-lg font-semibold">Description</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Enter a brief description" 
-                            {...field} 
+                          <Textarea
+                            placeholder="Enter a brief description"
+                            {...field}
                             className="min-h-[100px]"
                           />
                         </FormControl>
@@ -133,7 +161,7 @@ const ArticleCreationPage: React.FC = () => {
                       </FormItem>
                     )}
                   />
-  
+
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
@@ -155,7 +183,7 @@ const ArticleCreationPage: React.FC = () => {
                         </FormItem>
                       )}
                     />
-  
+
                     <FormField
                       control={form.control}
                       name="tags"
@@ -178,7 +206,7 @@ const ArticleCreationPage: React.FC = () => {
                     />
                   </div>
                 </div>
-  
+
                 {/* Right Column */}
                 <div className="space-y-6">
                   <FormField
@@ -188,9 +216,9 @@ const ArticleCreationPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-lg font-semibold">Content</ FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Enter the main content of the article" 
-                            {...field} 
+                          <Textarea
+                            placeholder="Enter the main content of the article"
+                            {...field}
                             className="min-h-[200px]"
                           />
                         </FormControl>
@@ -198,47 +226,78 @@ const ArticleCreationPage: React.FC = () => {
                       </FormItem>
                     )}
                   />
-  
                   <FormField
                     control={form.control}
                     name="images"
                     render={() => (
                       <FormItem>
-                        <FormLabel className="text-lg font-semibold">Images (URLs)</FormLabel>
-                        <div className="space-y-2">
+                        <FormLabel className="text-lg font-semibold">Images (Max 2)</FormLabel>
+                        <div className="grid grid-cols-2 gap-4">
                           {form.getValues('images').map((image, index) => (
-                            <div key={index} className="flex items-center space-x-2">
-                              <Input
-                                placeholder="Enter image URL"
-                                value={image}
-                                onChange={(e) => handleImageChange(index, e.target.value)}
-                                className="h-12"
+                            <div key={index} className="flex flex-col space-y-2">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && allowedTypes.test(file.type)) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      const newImages = [...form.getValues('images')];
+                                      newImages[index] = reader.result as string; 
+                                      form.setValue('images', newImages);
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                  else {
+                                    toast({
+                                      title: "Only images of type jpeg, jpg, png, or gif are allowed.",
+                                      description: "Retry again , Enjoy your personalized news feed!",
+                                    });
+                                  }
+                                }}
+                                className="h-12 border rounded-lg p-2"
                               />
-                              {index === form.getValues('images').length - 1 && (
-                                <Button
-                                  type="button"
-                                  onClick={() => form.setValue('images', [...form.getValues('images'), ''])}
-                                >
-                                  Add Image
-                                </Button>
+                              {/* Preview Image */}
+                              {image && (
+                                <img
+                                  src={image}
+                                  alt={`Preview ${index}`}
+                                  className="w-full h-auto rounded-md border border-gray-300"
+                                />
                               )}
                             </div>
                           ))}
+                          {form.getValues('images').length < 2 && (
+                            <div className="flex items-center">
+                              <Button
+                                type="button"
+                                onClick={() => form.setValue('images', [...form.getValues('images'), ''])}
+                                className="w-full h-12"
+                              >
+                                Add Image
+                              </Button>
+                            </div>
+                          )}
                         </div>
                         <FormMessage />
+                        {form.getValues('images').length < 2 && (
+                          <p className="text-red-500">Please upload 2 images.</p>
+                        )}
                       </FormItem>
                     )}
                   />
+
                 </div>
               </div>
-  
+
               <Button type="submit" className="w-full h-12">
                 Create Article
               </Button>
             </form>
           </Form>
         </div>
-  
+
         {/* Footer Section */}
         <div className="text-center p-6">
           <Button

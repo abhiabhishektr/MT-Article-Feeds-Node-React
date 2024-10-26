@@ -14,11 +14,14 @@ export interface User {
     id: string;
     title: string;
     description: string;
-    content: string;
     category: string;
+    content: string;
+    author: string;
+    likes: string[];
+    dislikes: string[];
+    blocks: string[];
+    images: string[];
     tags: string[];
-    likes: number;
-    dislikes: number;
-    blocks: number;
+    block?:string[]
   }
   

@@ -13,16 +13,13 @@ import cors from "cors";
 const app = express();
 const PORT = env.PORT ;
 
-// Connect to MongoDB
 connectDB();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 // app.use(rateLimiter);
 app.use(logger);
-
-// Routes
+ 
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/users', userRoutes);
@@ -30,7 +27,6 @@ app.get('/test',(req,res)=>{
     res.send('test')
 })
 
-// Error handling middleware
 app.use(errorHandler);
 
 app.listen(PORT, () => {

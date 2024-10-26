@@ -14,7 +14,7 @@ import upload from '../middlewares/upload';
 const router = express.Router();
 
 // Article Routes
-router.post('/', authMiddleware, upload.array('images'), createArticle); // Accept multiple images
+router.post('/', authMiddleware, upload.array('images'), createArticle); 
 router.get('/', getArticles);
 router.get('/articles/user', authMiddleware, getUserArticles);
 router.put('/:id', authMiddleware, updateArticle);

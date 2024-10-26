@@ -2,38 +2,33 @@ import { Request, Response } from 'express';
 import Article from '../models/article';
 import User from '../models/user';
 
-// Create Article
-// Create Article
-export const createArticle = async (req: Request, res: Response): Promise<void> => {
-    const { title, description, category, content, tags } = req.body; // Include description and tags
 
-    // Check if user is authenticated
+export const createArticle = async (req: Request, res: Response): Promise<void> => {
+    const { title, description, category, content, tags } = req.body;
+
     if (!req.user) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
     }
 
     try {
-        // Check if files are uploaded
-        const imagePaths = req.files ? (req.files as Express.Multer.File[]).map((file) => file.path) : []; // Get the file paths or set to empty array
+        const imagePaths = req.files ? (req.files as Express.Multer.File[]).map((file) => file.path) : [];
 
-        // Create a new article instance
         const newArticle = new Article({
             title,
-            description, // Save description
+            description,
             category,
             content,
             author: req.user.id,
-            images: imagePaths, // Store image paths in the article
-            tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [] // Handle tags, assuming they are passed as a comma-separated string
+            images: imagePaths,
+            tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
         });
 
-        // Save the new article to the database
         await newArticle.save();
-        res.status(201).json(newArticle); // Respond with the newly created article
+        res.status(201).json(newArticle);
     } catch (error) {
-        console.error('Error creating article:', error); // Log the error for debugging
-        res.status(400).json({ error: 'Error creating article' }); // Return error response
+        console.error('Error creating article:', error);
+        res.status(400).json({ error: 'Error creating article' });
     }
 };
 

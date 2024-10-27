@@ -1,4 +1,5 @@
 // Frontend-article-feeds-webapp/src/api/authApi.ts
+import { BASE_URL } from '@/config';
 import axios, { AxiosInstance } from 'axios';
 
 
@@ -12,7 +13,7 @@ interface LoginResponse {
 
 // Create an Axios instance with a base URL
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:3000/api',
+    baseURL: `${BASE_URL}/api`,
     timeout: 5000,
 });
 

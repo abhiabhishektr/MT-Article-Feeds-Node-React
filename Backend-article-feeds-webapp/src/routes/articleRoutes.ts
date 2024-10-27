@@ -4,21 +4,22 @@ import {
     createArticle,
     getArticles,
     updateArticle,
+    getArticleById,
     deleteArticle,
     interactWithArticle,
     getUserArticles,
 } from '../controllers/articleController';
-import { authMiddleware } from '../middlewares/authMiddleware';
 import upload from '../middlewares/upload';
 
 const router = express.Router();
 
 // Article Routes
-router.post('/', authMiddleware, upload.array('images'), createArticle); 
+router.post('/', upload.array('images'), createArticle);
 router.get('/', getArticles);
-router.get('/articles/user', authMiddleware, getUserArticles);
-router.put('/:id', authMiddleware, updateArticle);
-router.delete('/:id', authMiddleware, deleteArticle);
-router.post('/:id/interact', authMiddleware, interactWithArticle);
+router.get('/user', getUserArticles);
+router.get('/:id', getArticleById);
+router.put('/:id', upload.array('images'), updateArticle);
+router.delete('/:id', deleteArticle);
+router.post('/:id/interact', interactWithArticle);
 
 export default router;

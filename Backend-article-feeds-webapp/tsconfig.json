@@ -1,4 +1,3 @@
-// Backend-article-feeds-webapp/tsconfig.json
 {
   "compilerOptions": {
     "target": "es6",                               

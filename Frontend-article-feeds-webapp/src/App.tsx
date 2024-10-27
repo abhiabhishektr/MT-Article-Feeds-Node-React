@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/toaster"
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
 import { AuthProvider } from './context/AuthContext';
-import   LandingPage  from './components/LandingPage';
+import LandingPage from './components/LandingPage';
 import Navbar from '@/components/my/Navbar';
 import UserArticlesPage from './pages/UserArticlesPage';
 
@@ -46,6 +46,7 @@ const App: React.FC = () => {
 
         <Toaster />
       </AuthProvider>
+
     </>
   );
 };

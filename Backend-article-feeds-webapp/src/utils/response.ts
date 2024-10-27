@@ -8,7 +8,7 @@ interface ApiResponse<T> {
   }
   
   const sendResponse = <T>(res: Response, status: number, message: string, data?: T): Response => {
-    console.log(message);
+    // console.log(message);
     const response: ApiResponse<T> = {
       success: status >= 200 && status < 300,
       message,

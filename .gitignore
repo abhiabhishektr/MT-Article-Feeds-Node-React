@@ -26,3 +26,4 @@ dist-ssr
 
 # Frontend
 .env
+uploads/*

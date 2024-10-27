@@ -2,15 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import ArticleCard from '@/components/my/ArticleCard';
 import { Article } from '@/types';
-import sampleArticles from '@/utils/sampleArticles';
 import { useNavigate } from 'react-router-dom';
+import { getUserArticles } from '@/api/articleApi';
 
 const UserArticlesPage: React.FC = () => {
-    const [userArticles, setUserArticles] = useState<Article[]>(sampleArticles);
+    const [userArticles, setUserArticles] = useState<Article[]>([]);
     const navigate = useNavigate();
     useEffect(() => {
         const fetchUserArticles = async () => {
             try {
+                getUserArticles().then((response) => {
+                    setUserArticles(response.data); 
+                })
                 // setUserArticles(response.data);
             } catch (error) {
                 console.error('Error fetching user articles:', error);
@@ -22,8 +25,14 @@ const UserArticlesPage: React.FC = () => {
     }, []);
 
     const handleEdit = (id: string) => {
-        navigate("/edit-article")
+        navigate('/edit-article/'+id);
     };
+    const handleArticleClick = (id: string) => {
+        const article = userArticles.find(a => a._id === id);
+        if (article) {
+          navigate('/article-detail', { state: { article } });
+        }
+      };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 p-4">
@@ -34,6 +43,7 @@ const UserArticlesPage: React.FC = () => {
                         key={article.id}
                         article={article}
                         onEdit={handleEdit} 
+                        onArticleClick={handleArticleClick}
                     />
                 ))}
             </div>

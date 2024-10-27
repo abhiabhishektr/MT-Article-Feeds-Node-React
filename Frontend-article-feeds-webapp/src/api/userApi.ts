@@ -32,7 +32,7 @@ interface UpdateUserdata {
 // Get User Profile
 export const getUserProfile = async (): Promise<UserProfileResponse> => {
   try {
-    const response = await api.get<UserProfileResponse>('/users/profile');
+    const response = await api.get<UserProfileResponse>('/users');
     return response.data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -40,14 +40,39 @@ export const getUserProfile = async (): Promise<UserProfileResponse> => {
   }
 };
 
+
 // Update User Profile
-export const updateUserProfile = async (updateUserData: UpdateUserdata): Promise<UpdateResponse> => {
-  console.log("updateUserData: ", updateUserData);
+// src/types/user.ts
+export interface UpdateUserProfileData {
+  firstName?: string;
+  lastName?: string;
+  preferences?: string[];
+}
+
+export interface UpdatePasswordData {
+  oldPassword: string;
+  newPassword: string;
+}
+
+
+// src/api/userApi.ts
+
+export const updateUserProfile = async (updateUserData: UpdateUserProfileData): Promise<UpdateResponse> => {
   try {
     const response = await api.put<UpdateResponse>('/users/profile', updateUserData);
     return response.data;
   } catch (error) {
     console.error('Error updating user profile:', error);
-    throw error; // Consider creating a custom error type if needed
+    throw error;
+  }
+};
+
+export const updateUserPassword = async (passwordData: UpdatePasswordData): Promise<UpdateResponse> => {
+  try {
+    const response = await api.put<UpdateResponse>('/users/password', passwordData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
   }
 };

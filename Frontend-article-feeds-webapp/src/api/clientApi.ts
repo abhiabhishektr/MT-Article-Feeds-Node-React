@@ -1,8 +1,10 @@
 // Frontend-article-feeds-webapp/src/api/clientApi.ts
+import { BASE_URL } from '@/config';
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
+
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:3000/api', 
+  baseURL: `${BASE_URL}/api`,
   // Adjust the base URL according to your backend server
   timeout: 5000, 
   // You can set a timeout for the requests

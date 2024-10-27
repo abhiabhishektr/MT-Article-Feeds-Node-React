@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
 import {
   Form,
   FormControl,
@@ -13,7 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useNavigate } from 'react-router-dom';
-import { getUserProfile, updateUserProfile } from '@/api/userApi';
+import { getUserProfile, UpdatePasswordData, updateUserPassword, updateUserProfile, UpdateUserProfileData } from '@/api/userApi';
 
 const preferenceOptions = [
   { id: 'sports', label: 'Sports', icon: '⚽' },
@@ -35,32 +36,45 @@ const formSchema = z.object({
   preferences: z.array(z.string()).min(1, {
     message: 'Please select at least one preference.',
   }),
-  oldPassword: z.string().min(8, {
-    message: 'Old password must be at least 8 characters.',
-  }).optional(),
-  newPassword: z.string().min(8, {
-    message: 'New password must be at least 8 characters.',
-  }).optional(),
-  confirmPassword: z.string().optional(),
 });
 
+const passwordFormSchema = z.object({
+  oldPassword: z.string().min(8, {
+    message: 'Old password must be at least 8 characters.',
+  }),
+  newPassword: z.string().min(8, {
+    message: 'New password must be at least 8 characters.',
+  }),
+  confirmPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     preferences: [] as string[],
-    newPassword: "",
-    confirmPassword: "",
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: userData
+  });
+
+  const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    }
   });
 
   useEffect(() => {
@@ -73,8 +87,6 @@ const SettingsPage: React.FC = () => {
           email: response.data.email,
           phone: response.data.phone,
           preferences: response.data.preferences || [],
-          newPassword: '',
-          confirmPassword: '',
         };
         setUserData(data);
         form.reset(data);
@@ -86,19 +98,15 @@ const SettingsPage: React.FC = () => {
     fetchUserData();
   }, [form]);
 
+  // Update these functions in your SettingsPage component
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const updatePayload: any = {
+      const updatePayload: UpdateUserProfileData = {
         firstName: values.firstName,
         lastName: values.lastName,
         preferences: values.preferences,
       };
-  
-      if (values.newPassword) {
-        updatePayload.oldPassword = values.oldPassword; // Include old password
-        updatePayload.newPassword = values.newPassword; // Include new password
-      }
-  
+
       await updateUserProfile(updatePayload);
       setIsEditing(false);
       setUserData({
@@ -107,17 +115,52 @@ const SettingsPage: React.FC = () => {
         lastName: values.lastName,
         preferences: values.preferences,
       });
-      alert('Settings Updated');
-    } catch (error) {
-      alert('Error updating settings');
-      console.error('Error updating settings:', error);
+
+      toast({
+        description: "successfully updated profile",
+        className: "bg-black text-white",
+      })
+    } catch (error : any) {
+      toast({
+        description: error.response.data.message,
+        variant: "destructive",
+        className: "bg-black text-white",
+      })
+      console.error('Error updating profile:', error);
     }
   }
-  
 
+  async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
+    try {
+      const passwordData: UpdatePasswordData = {
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+      };
+
+      await updateUserPassword(passwordData);
+      setIsChangingPassword(false);
+      passwordForm.reset();
+      toast({
+        description: "successfully updated password",
+        className: "bg-black text-white",
+      })
+    } catch (error: any) {
+      toast({
+        description: error.response.data.message,
+        variant: "destructive",
+        className: "bg-black text-white",
+      })
+      console.error('Error updating password:', error.response.data.message);
+    }
+  }
   const handleCancel = () => {
     form.reset(userData);
     setIsEditing(false);
+  };
+
+  const handlePasswordCancel = () => {
+    passwordForm.reset();
+    setIsChangingPassword(false);
   };
 
   return (
@@ -131,17 +174,6 @@ const SettingsPage: React.FC = () => {
             {isEditing ? 'Edit your personal information and preferences.' : 'View your profile information.'}
           </p>
         </div>
-
-        {!isEditing && (
-          <div className="flex justify-end">
-            <Button
-              onClick={() => setIsEditing(true)}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              Edit Profile
-            </Button>
-          </div>
-        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -182,7 +214,6 @@ const SettingsPage: React.FC = () => {
               )}
             />
 
-            {/* Read-only email field */}
             <FormField
               control={form.control}
               name="email"
@@ -201,7 +232,6 @@ const SettingsPage: React.FC = () => {
               )}
             />
 
-            {/* Read-only phone field */}
             <FormField
               control={form.control}
               name="phone"
@@ -220,62 +250,6 @@ const SettingsPage: React.FC = () => {
               )}
             />
 
-            {isEditing && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="newPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>New Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Leave blank to keep current password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm New Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Confirm new password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-            <FormField
-              control={form.control}
-              name="oldPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Old Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Enter old password"
-                      {...field}
-                      
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="preferences"
@@ -301,10 +275,10 @@ const SettingsPage: React.FC = () => {
                                   size="lg"
                                   disabled={!isEditing}
                                   className={`
-                                  w-24 h-24 rounded-full flex flex-col items-center justify-center space-y-2
-                                  ${field.value?.includes(option.id) ? 'border-primary bg-primary text-primary-foreground' : ''}
-                                  ${!isEditing ? 'opacity-75' : ''}
-                                `}
+                                    w-24 h-24 rounded-full flex flex-col items-center justify-center space-y-2
+                                    ${field.value?.includes(option.id) ? 'border-primary bg-primary text-primary-foreground' : ''}
+                                    ${!isEditing ? 'opacity-75' : ''}
+                                  `}
                                   onClick={() => {
                                     if (isEditing) {
                                       const updatedPreferences = field.value?.includes(option.id)
@@ -342,12 +316,108 @@ const SettingsPage: React.FC = () => {
                   Cancel
                 </Button>
                 <Button type="submit">
-                  Update
+                  Update Profile
                 </Button>
               </div>
             )}
           </form>
         </Form>
+
+        {/* Separate Password Change Section */}
+        {!isChangingPassword && !isEditing && (
+          <div className="pt-6 border-t">
+            <Button
+              onClick={() => setIsChangingPassword(true)}
+              variant="outline"
+              className="w-full"
+            >
+              Change Password
+            </Button>
+          </div>
+        )}
+        {!isEditing && !isChangingPassword && (
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setIsEditing(true)}
+                variant="outline"
+                className="w-full"              >
+                Edit Profile
+              </Button>
+            </div>
+          )}
+
+        {isChangingPassword && (
+          <div className="pt-6 border-t">
+            <h3 className="text-lg font-medium mb-4">Change Password</h3>
+            <Form {...passwordForm}>
+              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                <FormField
+                  control={passwordForm.control}
+                  name="oldPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Enter current password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={passwordForm.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Enter new password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={passwordForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm New Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Confirm new password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end space-x-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePasswordCancel}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    Update Password
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        )}
 
         <div className="text-center">
           <Button
@@ -357,6 +427,7 @@ const SettingsPage: React.FC = () => {
           >
             Back to Dashboard
           </Button>
+          
         </div>
       </div>
     </div>

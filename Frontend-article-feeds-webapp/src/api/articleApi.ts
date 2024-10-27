@@ -10,7 +10,13 @@ export interface ICreateArticle {
   category: string;
   content: string;
   tags?: string[];
-  images?: File[];
+  images: File[];
+  existingImages?: (string | File)[];
+  removedImages?: string[];
+}
+
+export interface IReturnArticle{
+  data:ICreateArticle
 }
 
 export const createArticle = async (articleData: ICreateArticle): Promise<void> => {
@@ -42,9 +48,9 @@ export const createArticle = async (articleData: ICreateArticle): Promise<void> 
   }
 };
 
-export const getArticleById = async (id: string): Promise<Article> => {
+export const getArticleById = async (id: string): Promise<IReturnArticle> => {
   try {
-    const response = await api.get<Article>(`/articles/${id}`); 
+    const response = await api.get<IReturnArticle>(`/articles/${id}`); 
     return response.data;
   } catch (error) {
     console.error('Error fetching article:', error);
@@ -53,9 +59,9 @@ export const getArticleById = async (id: string): Promise<Article> => {
 }
 
 // Get All Articles
-export const getArticles = async (): Promise<Article[]> => {
+export const getArticles = async (): Promise<{data:Article[]}> => {
   try {
-    const response = await api.get<Article[]>('/articles');
+    const response = await api.get<{data:Article[]}>('/articles');
     return response.data;
   } catch (error) {
     console.error('Error fetching articles:', error);
@@ -64,9 +70,9 @@ export const getArticles = async (): Promise<Article[]> => {
 };
 
 // Get User's Articles
-export const getUserArticles = async (): Promise<Article[]> => {
+export const getUserArticles = async (): Promise<{data:Article[]}> => {
   try {
-    const response = await api.get<Article[]>('/articles/user');
+    const response = await api.get<{data:Article[]}>('/articles/user');
     return response.data;
   } catch (error) {
     console.error("Error fetching user's articles:", error);
@@ -74,13 +80,18 @@ export const getUserArticles = async (): Promise<Article[]> => {
   }
 };
 
-// Update Article
-export const updateArticle = async (id: string, updatedData: Partial<Article>): Promise<void> => {
+// Update Article api
+export const updateArticle = async (id: string, updatedData: FormData): Promise<void> => {
+  console.log("updatedData: ", updatedData);
   try {
-    await api.put(`/articles/${id}`, updatedData);
+    await api.put(`/articles/${id}`, updatedData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   } catch (error) {
     console.error('Error updating article:', error);
-    throw error;
+    throw error; // Re-throw error for higher-level handling
   }
 };
 
@@ -95,11 +106,16 @@ export const deleteArticle = async (id: string): Promise<void> => {
 };
 
 // Interact with Article (like, dislike, block)
-export const interactWithArticle = async (id: string, action: 'like' | 'dislike' | 'block'): Promise<void> => {
+// Interact with Article (like, dislike, block)
+export const interactWithArticle = async (
+  id: string,
+  action: 'like' | 'dislike' | 'block'
+): Promise<boolean> => {
   try {
     await api.post(`/articles/${id}/interact`, { action });
+    return true; // Return true if the interaction is successful
   } catch (error) {
     console.error(`Error interacting with article: ${action}`, error);
-    throw error;
+    return false; // Return false if there's an error
   }
 };

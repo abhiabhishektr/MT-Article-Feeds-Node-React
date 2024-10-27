@@ -19,19 +19,28 @@ const Navbar: React.FC = () => {
     <nav className="bg-gradient-to-r from-blue-100 to-purple-100 py-4 shadow-md">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="text-2xl font-extrabold text-gray-900">
+          <Link to="/dashboard" className="text-2xl font-extrabold text-gray-900">
             NewsFeed
           </Link>
         </div>
         <div className="flex space-x-4">
-          <Link to="/create-article" className="text-gray-700 hover:text-purple-600">
+          <Link
+            to="/create-article"
+            className={cn(
+              "text-gray-700 hover:text-purple-600",
+              location.pathname === '/create-article' && 'text-purple-600 font-bold'
+            )}
+          >
             Create
           </Link>
-          <Link to="/about" className="text-gray-700 hover:text-purple-600">
-            About
-          </Link>
-          <Link to="/contact" className="text-gray-700 hover:text-purple-600">
-            Contact
+          <Link
+            to="/user-article"
+            className={cn(
+              "text-gray-700 hover:text-purple-600",
+              location.pathname === '/user-article' && 'text-purple-600 font-bold'
+            )}
+          >
+            My Articles
           </Link>
         </div>
         <div className="flex items-center space-x-4">

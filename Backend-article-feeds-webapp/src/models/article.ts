@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, ObjectId } from 'mongoose';
 
 export interface IArticle extends Document {
     title: string;       
@@ -6,9 +6,9 @@ export interface IArticle extends Document {
     category: 'sports' | 'politics' | 'space' | 'tech' | 'news'; 
     content: string;     
     author: string;      
-    likes: string[];     
-    dislikes: string[];  
-    blocks: string[];    
+    likes: ObjectId[];     
+    dislikes: ObjectId[][];  
+    blocks: ObjectId[];    
     images: string[];    
     tags: string[];      
 }

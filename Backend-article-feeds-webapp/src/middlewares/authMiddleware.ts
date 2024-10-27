@@ -2,19 +2,20 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt';
 import { IJwtPayload } from '../types/jwtPayload';
+import  sendResponse  from '../utils/response';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const authorizationHeader = req.headers.authorization;
     
     if (!authorizationHeader || authorizationHeader.split(' ').length !== 2) {  
-        res.status(403).json({ error: 'Unauthorized' });
+        sendResponse(res, 403, 'Unauthorized');
         return;
     }
 
     const token = authorizationHeader.split(' ')[1];
     
     if (!token) {
-        res.status(403).json({ error: 'Invalid token' });
+        sendResponse(res, 403, 'Invalid token');
         return;
     } 
 
@@ -22,12 +23,12 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            res.status(401).json({ error: 'Invalid token' });
+            sendResponse(res, 401, 'Invalid token');
             return;
         }
 
         if (!decoded) {
-            res.status(401).json({ error: 'Token verification failed' });
+            sendResponse(res, 401, 'Token verification failed');
             return;
         }
 

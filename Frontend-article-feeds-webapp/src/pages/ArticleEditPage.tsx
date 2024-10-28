@@ -37,6 +37,7 @@ const ArticleEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<ICreateArticle | null>(null); 
   const [existingImages, setExistingImages] = useState<(string | File)[]>([]);
+  //@ts-ignore
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
 

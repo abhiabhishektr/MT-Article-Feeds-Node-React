@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -187,7 +187,7 @@ const ArticleCreationPage: React.FC = () => {
                     <FormField
                       control={form.control}
                       name="tags"
-                      render={({ field }) => (
+                      render={({ }) => (
                         <FormItem>
                           <FormLabel className="text-lg font-semibold">Tags</FormLabel>
                           <FormControl>
